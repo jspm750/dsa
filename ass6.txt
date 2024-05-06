@@ -1,0 +1,240 @@
+#include <iostream>
+#include <cstdlib>
+#define MAX_VALUE 65536
+using namespace std;
+class Node
+{ public:
+ int key;
+ Node *l, *r;
+ bool lThread, rThread; 
+};
+ 
+class ThreadedBinarySearchTree
+{ private:
+ Node *root;
+ public:
+ ThreadedBinarySearchTree() 
+ {
+ root = new Node();
+ root->r = root->l = root;
+ root->lThread = true;
+ root->key = MAX_VALUE;
+ }
+ void makeEmpty()
+ {
+ root = new Node();
+ root->r = root->l = root;
+ root->lThread = true;
+ root->key = MAX_VALUE;
+ }
+ void insert(int key) 
+ {
+ Node *p = root;
+ for (;;) 
+ {
+ if (p->key < key) 
+ { if (p->rThread) 
+ break;
+ p = p->r;
+ } 
+ else if (p->key > key) 
+ { if (p->lThread) 
+ break;
+ p = p->l;
+ }
+ else 
+ return; 
+ }
+ Node *tmp = new Node();
+ tmp->key = key;
+ tmp->rThread = tmp->lThread = true;
+ 
+ if (p->key < key) 
+ { tmp->r = p->r;
+ tmp->l = p;
+ p->r = tmp;
+ p->rThread = false;
+ }
+ else
+ { tmp->r = p;
+ tmp->l = p->l;
+ p->l = tmp;
+ p->lThread = false;
+ }
+ }
+ bool search(int key) 
+ {
+ Node *tmp = root->l;
+ for (;;) 
+ {
+ if (tmp->key < key) 
+ {
+ if (tmp->rThread) 
+ return false;
+ tmp = tmp->r;
+ } 
+ else if (tmp->key > key) 
+ {
+ if (tmp->lThread) 
+ return false;
+ tmp = tmp->l;
+ } 
+ else 
+ {
+ return true;
+ }
+ }
+ }
+ void Delete(int key)
+ {
+ Node *dest = root->l, *p = root;
+ for (;;) 
+ {
+ if (dest->key < key) 
+ {
+ 
+ if (dest->rThread) 
+ return; 
+ p = dest;
+ dest = dest->r;
+ } 
+ else if (dest->key > key) 
+ {
+ 
+ if (dest->lThread) 
+ return; 
+ p = dest;
+ dest = dest->l;
+ }
+ else 
+ break; 
+ }
+ Node *target = dest;
+ if (!dest->rThread && !dest->lThread) 
+ { 
+ 
+ p = dest;
+ 
+ target = dest->l;
+ while (!target->rThread) 
+ {
+ p = target;
+ target = target->r;
+ }
+ dest->key = target->key; 
+ }
+ if (p->key >= target->key) 
+ {
+ if (target->rThread && target->lThread) 
+ {
+ p->l = target->l;
+ p->lThread = true;
+ } 
+ else if (target->rThread) 
+ {
+ Node *largest = target->l;
+ while (!largest->rThread)
+ {
+ largest = largest->r;
+ }
+ largest->r = p;
+ p->l = target->l;
+ }
+ else 
+ {
+ Node *smallest = target->r;
+ while (!smallest->lThread) 
+ {
+ smallest = smallest->l;
+ }
+ smallest->l = target->l;
+ p->l = target->r;
+ }
+ } 
+ else 
+ {
+ if (target->rThread && target->lThread) 
+ {
+ p->r = target->r;
+ p->rThread = true;
+ }
+ else if (target->rThread) 
+ { *largest = target->l;
+ while (!largest->rThread) 
+ largest = largest->r;
+ largest->r = target->r;
+ p->r = target->l;
+ } 
+ else 
+ {
+ Node *smallest = target->r;
+ while (!smallest->lThread)
+ { smallest = smallest->l; }
+ smallest->l = p;
+ p->r = target->r; }
+ }
+ }
+ void printTree() 
+ {
+ Node *tmp = root, *p;
+ for (;;) 
+ {
+ p = tmp;
+ tmp = tmp->r;
+ if (!p->rThread) 
+ {
+ while (!tmp->lThread) 
+ {
+ tmp = tmp->l;
+ }
+ }
+ if (tmp == root) 
+ break;
+ cout<<tmp->key<<" ";}
+ cout<<endl;
+ } };
+int main()
+{ 
+ ThreadedBinarySearchTree tbst; 
+ cout<<"ThreadedBinarySearchTree Test\n"; 
+ char ch;
+ int choice, val;
+ do 
+ { cout<<"\nThreadedBinarySearchTree Operations\n1. Insert \n2. Delete\n3. Search\n4. Clear"<<endl; 
+ cout<<"Enter Your Choice: ";
+ cin>>choice;
+ switch (choice)
+ {
+ case 1 : 
+ cout<<"Enter integer element to insert: ";
+ cin>>val;
+ tbst.insert(val); 
+ break; 
+ case 2 : 
+ cout<<"Enter integer element to delete: ";
+ cin>>val;
+ tbst.Delete(val); 
+ break; 
+ case 3 : 
+ cout<<"Enter integer element to search: ";
+ cin>>val;
+ if (tbst.search(val) == true)
+ cout<<"Element "<<val<<" found in the tree"<<endl;
+ else
+ cout<<"Element "<<val<<" not found in the tree"<<endl;
+ break; 
+ case 4 : 
+ cout<<"\nTree Cleared\n";
+ tbst.makeEmpty();
+ break; 
+ default : 
+ cout<<"Wrong Entry \n ";
+ }
+ cout<<"\nTree = ";
+ tbst.printTree(); 
+ cout<<"\nDo you want to continue (Type y or n): ";
+ cin>>ch; 
+ } 
+ while (ch == 'Y'|| ch == 'y'|| ch=='N' || ch=='n'); 
+ return 0;
+}

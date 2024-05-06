@@ -1,0 +1,119 @@
+#define INFINITY 9999
+#include<iostream>
+#include<math.h>
+#define max 10
+using namespace std;
+class graph
+{
+int g[max][max];
+int n;
+public:
+graph(){}
+void getgraph()
+{
+cout<<"\nEnter No. Of Vertices In Graph:";
+cin>>n;
+cout<<"Enter the weight of edge:\n";
+for(int i=0;i<n;i++)
+{
+for(int j=0;j<n;j++)
+{
+cout<<"["<<i<<"]["<<j<<"]=";
+cin>>g[i][j];
+}
+}
+}
+void displayg()
+{
+cout<<"\nAdjancy Matrix Is:\n";
+for(int i=0;i<n;i++)
+{
+cout<<"[";
+for(int j=0;j<n;j++)
+cout<<g[i][j]<<" ";
+cout<<"]\n";
+}
+}
+void dijkstra()
+{
+int cost[max][max];
+int v[max]={0};
+int dist[max],sn=0,nn;
+int pred[max];
+int mind;
+int i,j;
+for(i=0;i<n;i++)
+{
+for(j=0;j<n;j++)
+{
+if(g[i][j]==0)
+cost[i][j]=INFINITY;
+else
+cost[i][j]=g[i][j];
+}
+}
+cout<<"\nCost Matrix Is:\n";
+for(i=0;i<n;i++)
+{
+cout<<"[";
+for(int j=0;j<n;j++)
+{
+cout<<cost[i][j]<<" ";
+}
+cout<<"]\n";
+}
+for(i=0;i<n;i++)
+{
+dist[i]=cost[sn][i];
+pred[i]=sn;
+v[i]=0;
+}
+dist[sn]=0;
+v[sn]=1;
+int cnt=1;
+while(cnt<=n-1)
+{
+mind=INFINITY;
+for(i=0;i<n;i++)
+{
+if(dist[i]<=mind && !v[i])
+{
+mind=dist[i];
+nn=i;
+}
+}
+v[nn]=1;
+for(i=0;i<n;i++)
+{
+if(!v[i])
+{
+if(mind+cost[nn][i]<dist[i])
+{ dist[i]=mind+cost[nn][i];
+pred[i]=nn;
+}
+}
+}
+cnt++;
+}
+for(i=0;i<n;i++)
+{
+if(i!=sn)
+{ cout<<"\n Distance Of Node"<<i<<"="<<dist[i];
+cout<<"\n Path="<<i;
+j=i;
+do
+{ j=pred[j];
+cout<<"<-"<<j;
+}while(j!=sn);
+}
+}
+}
+};
+int main()
+{
+graph g;
+g.getgraph();
+g.displayg();
+g.dijkstra();
+ return 0;
+}
